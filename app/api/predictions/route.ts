@@ -1,68 +1,63 @@
 import { NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
+import { getAllPredictions, savePrediction, deletePrediction, updatePrediction } from "@/lib/kv"
+import type { Prediction } from "@/lib/types"
 
-// Change the path to use /tmp in production
-const dataFilePath = process.env.VERCEL
-  ? path.join("/tmp", "predictions.json")
-  : path.join(process.cwd(), "data", "predictions.json")
-
-// Ensure the data directory exists (only needed for local development)
-async function ensureDataDirectory() {
-  if (!process.env.VERCEL) {
-    const dataDir = path.join(process.cwd(), "data")
-    try {
-      await fs.access(dataDir)
-    } catch (error) {
-      await fs.mkdir(dataDir, { recursive: true })
-    }
-  }
-}
-
+// GET - Fetch all predictions
 export async function GET() {
   try {
-    await ensureDataDirectory()
-
-    try {
-      const data = await fs.readFile(dataFilePath, "utf8")
-      return NextResponse.json(JSON.parse(data))
-    } catch (error) {
-      // If file doesn't exist or is invalid, return empty array
-      await fs.writeFile(dataFilePath, JSON.stringify([]), "utf8")
-      return NextResponse.json([])
-    }
+    const predictions = await getAllPredictions()
+    return NextResponse.json(predictions)
   } catch (error) {
-    console.error("Error reading predictions:", error)
+    console.error("Error fetching predictions:", error)
     return NextResponse.json({ error: "Failed to fetch predictions" }, { status: 500 })
   }
 }
 
+// POST - Create a new prediction
 export async function POST(request: Request) {
   try {
-    const prediction = await request.json()
-
-    // Add timestamp for sorting
-    prediction.timestamp = new Date().toISOString()
-
-    await ensureDataDirectory()
-
-    let predictions = []
-
-    try {
-      const data = await fs.readFile(dataFilePath, "utf8")
-      predictions = JSON.parse(data)
-    } catch (error) {
-      // If file doesn't exist or is invalid, create a new array
-      predictions = []
-    }
-
-    predictions.push(prediction)
-    await fs.writeFile(dataFilePath, JSON.stringify(predictions, null, 2), "utf8")
-
-    return NextResponse.json({ success: true })
+    const prediction = (await request.json()) as Partial<Prediction>
+    const savedPrediction = await savePrediction(prediction)
+    return NextResponse.json({ success: true, prediction: savedPrediction })
   } catch (error) {
     console.error("Error saving prediction:", error)
     return NextResponse.json({ error: "Failed to save prediction" }, { status: 500 })
+  }
+}
+
+// DELETE - Delete a prediction by ID
+export async function DELETE(request: Request) {
+  try {
+    const { id } = (await request.json()) as { id: string }
+    if (!id) {
+      return NextResponse.json({ error: "Prediction ID is required" }, { status: 400 })
+    }
+
+    await deletePrediction(id)
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting prediction:", error)
+    return NextResponse.json({ error: "Failed to delete prediction" }, { status: 500 })
+  }
+}
+
+// PUT - Update a prediction
+export async function PUT(request: Request) {
+  try {
+    const { id, ...updateData } = (await request.json()) as Prediction & { id: string }
+    if (!id) {
+      return NextResponse.json({ error: "Prediction ID is required" }, { status: 400 })
+    }
+
+    const updatedPrediction = await updatePrediction(id, updateData)
+    if (!updatedPrediction) {
+      return NextResponse.json({ error: "Prediction not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, prediction: updatedPrediction })
+  } catch (error) {
+    console.error("Error updating prediction:", error)
+    return NextResponse.json({ error: "Failed to update prediction" }, { status: 500 })
   }
 }
 

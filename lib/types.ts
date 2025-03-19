@@ -1,8 +1,11 @@
 export interface Prediction {
+  id: string
   name: string
-  gender: "boy" | "girl"
-  dueDate: string | Date
-  nameSuggestion: string
+  email?: string
+  guess: string
   timestamp: string
+  [key: string]: any // For any additional fields
 }
+
+export type PredictionArray = Prediction[]
 
