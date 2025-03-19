@@ -1,5 +1,7 @@
 import { format } from "date-fns"
 import { kv } from "@vercel/kv"
+import { CalendarIcon, UserIcon, MessageSquareIcon, PartyPopperIcon } from "lucide-react"
+import Link from "next/link"
 
 interface Prediction {
   name: string
@@ -57,10 +59,16 @@ export default async function PredictionList() {
 
   if (!predictions || predictions.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No predictions yet. Be the first to make one!</p>
-        <div className="mt-4">
-          <a href="/api/debug" target="_blank" className="text-blue-500 underline" rel="noreferrer">
+      <div className="text-center py-12 gender-reveal-card p-8 max-w-md mx-auto">
+        <div className="text-violet-500 mb-4">
+          <PartyPopperIcon size={48} className="mx-auto" />
+        </div>
+        <p className="text-gray-600 mb-4">No predictions yet. Be the first to make one!</p>
+        <Link href="/predict" className="neutral-button inline-block">
+          Make a Prediction
+        </Link>
+        <div className="mt-6">
+          <a href="/api/debug" target="_blank" className="text-xs text-violet-500 underline" rel="noreferrer">
             Debug KV Store
           </a>
         </div>
@@ -69,35 +77,65 @@ export default async function PredictionList() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {predictions.map((prediction, index) => (
         <div
           key={prediction.id || index}
-          className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200"
+          className="gender-reveal-card group bounce-in"
+          style={{ animationDelay: `${index * 0.1}s` }}
         >
-          <div className={`h-2 w-full ${prediction.gender === "boy" ? "bg-blue-500" : "bg-pink-500"}`} />
+          <div
+            className={`h-3 w-full ${prediction.gender === "boy" ? "bg-gradient-to-r from-sky-400 to-sky-600" : "bg-gradient-to-r from-pink-400 to-pink-600"}`}
+          />
           <div className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-bold text-lg">{prediction.name}</h3>
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${prediction.gender === "boy" ? "bg-sky-100 text-sky-600" : "bg-pink-100 text-pink-600"}`}
+                >
+                  <UserIcon size={20} />
+                </div>
+                <h3 className="font-bold text-lg ml-3 group-hover:text-violet-600 transition-colors">
+                  {prediction.name}
+                </h3>
+              </div>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  prediction.gender === "boy" ? "bg-blue-100 text-blue-800" : "bg-pink-100 text-pink-800"
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  prediction.gender === "boy"
+                    ? "bg-sky-100 text-sky-800 border border-sky-200"
+                    : "bg-pink-100 text-pink-800 border border-pink-200"
                 }`}
               >
                 {prediction.gender === "boy" ? "Boy" : "Girl"}
               </span>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium">Due Date Guess:</span>{" "}
-                {format(new Date(prediction.dueDate), "MMMM d, yyyy")}
+            <div className="space-y-4 text-sm">
+              <div className="flex items-start">
+                <div className="mt-0.5 mr-3 text-violet-500">
+                  <CalendarIcon size={16} />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Due Date Guess:</span>{" "}
+                  <span className="text-gray-600">{format(new Date(prediction.dueDate), "MMMM d, yyyy")}</span>
+                </div>
               </div>
-              <div>
-                <span className="font-medium">Name Suggestion:</span> {prediction.nameSuggestion}
+
+              <div className="flex items-start">
+                <div className="mt-0.5 mr-3 text-violet-500">
+                  <MessageSquareIcon size={16} />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Name Suggestion:</span>{" "}
+                  <span className="text-gray-600">{prediction.nameSuggestion}</span>
+                </div>
               </div>
-              <div className="text-xs text-gray-500 pt-2">
-                Submitted on {format(new Date(prediction.timestamp), "MMM d, yyyy")}
+
+              <div className="pt-4 border-t border-gray-100 text-xs text-gray-500 flex justify-between items-center">
+                <span>Submitted on {format(new Date(prediction.timestamp), "MMM d, yyyy")}</span>
+                <div
+                  className={`w-2 h-2 rounded-full ${prediction.gender === "boy" ? "bg-sky-400" : "bg-pink-400"} animate-pulse`}
+                ></div>
               </div>
             </div>
           </div>

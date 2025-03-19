@@ -1,25 +1,36 @@
+import Image from "next/image"
 import PredictionForm from "@/components/prediction-form"
+import { ArrowLeft } from "lucide-react"
 
 export default function PredictPage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <a href="/" className="inline-flex items-center mb-6 text-gray-500 hover:text-gray-700">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fillRule="evenodd"
-            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-            clipRule="evenodd"
-          />
-        </svg>
-        Back to all predictions
-      </a>
+    <div className="confetti-bg min-h-screen py-12">
+      <div className="gender-reveal-container max-w-4xl">
+        <a href="/" className="inline-flex items-center mb-8 text-violet-500 hover:text-violet-700 transition-colors">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to all predictions
+        </a>
 
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-4">Make Your Prediction</h1>
-        <p className="text-gray-600">Fill out the form below to submit your gender reveal prediction</p>
+        <div className="mb-10 text-center fade-in">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute -top-6 -left-6 w-12 h-12 bg-pink-100 rounded-full animate-pulse"></div>
+              <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-sky-100 rounded-full animate-pulse delay-300"></div>
+              <div className="relative z-10 w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                <Image src="/images/IMG_7159.jpeg" alt="Baby" fill style={{ objectFit: "cover" }} priority />
+              </div>
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold mb-4 gender-reveal-heading">Make Your Prediction</h1>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Fill out the form below to submit your gender reveal prediction. Will it be a bouncing baby boy or a
+            gorgeous baby girl?
+          </p>
+        </div>
+
+        <PredictionForm />
       </div>
-
-      <PredictionForm />
     </div>
   )
 }

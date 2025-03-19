@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { RefreshCwIcon } from "lucide-react"
 
 export default function RefreshButton() {
   const router = useRouter()
@@ -14,12 +15,11 @@ export default function RefreshButton() {
   }
 
   return (
-    <button
-      onClick={handleRefresh}
-      disabled={isRefreshing}
-      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
-    >
-      {isRefreshing ? "Refreshing..." : "Refresh Predictions"}
+    <button onClick={handleRefresh} disabled={isRefreshing} className="neutral-button group">
+      <span className="flex items-center justify-center">
+        {isRefreshing ? "Refreshing..." : "Refresh Predictions"}
+        <RefreshCwIcon className="ml-2 w-5 h-5 group-hover:animate-spin" />
+      </span>
     </button>
   )
 }
