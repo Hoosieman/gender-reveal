@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Suspense } from "react"
 import PredictionList from "@/components/prediction-list"
+import RefreshButton from "@/components/refresh-button"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -13,12 +14,15 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-6">
           Join the fun and share your prediction for our upcoming bundle of joy!
         </p>
-        <Link
-          href="/predict"
-          className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-        >
-          Make Your Prediction
-        </Link>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link
+            href="/predict"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+          >
+            Make Your Prediction
+          </Link>
+          <RefreshButton />
+        </div>
       </div>
 
       <div className="mt-12">

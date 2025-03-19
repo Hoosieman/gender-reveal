@@ -8,10 +8,12 @@ export { kv }
 // Helper function to check if KV is connected
 async function checkKVConnection() {
   try {
+    console.log("Checking KV connection...")
     await kv.ping()
+    console.log("KV connection successful")
     return true
-  } catch (error) {
-    console.error("KV connection error:", error)
+  } catch (error: any) {
+    console.error("KV connection error:", error?.message)
     return false
   }
 }
@@ -19,18 +21,26 @@ async function checkKVConnection() {
 // Helper functions for predictions
 export async function getAllPredictions(): Promise<Prediction[]> {
   try {
+    console.log("getAllPredictions - Starting")
+
     // Check connection first
     const isConnected = await checkKVConnection()
     if (!isConnected) {
-      console.warn("KV not connected, using file storage fallback")
-      return getFileData()
+      console.warn("getAllPredictions - KV not connected, using file storage fallback")
+      const fileData = await getFileData()
+      console.log(`getAllPredictions - Got ${fileData.length} predictions from file`)
+      return fileData
     }
 
+    console.log("getAllPredictions - Fetching from KV")
     const predictions = (await kv.get<Prediction[]>("predictions")) || []
+    console.log(`getAllPredictions - Got ${predictions.length} predictions from KV:`, predictions)
+
     return Array.isArray(predictions) ? predictions : []
-  } catch (error) {
-    console.error("Error fetching predictions:", error)
+  } catch (error: any) {
+    console.error("getAllPredictions - Error:", error?.message)
     // Fallback to file storage
+    console.log("getAllPredictions - Falling back to file storage")
     return getFileData()
   }
 }
@@ -38,14 +48,15 @@ export async function getAllPredictions(): Promise<Prediction[]> {
 export async function savePrediction(prediction: Partial<Prediction>): Promise<Prediction> {
   try {
     // Create a new prediction with required fields
-    const newPrediction = {
+    const newPrediction: Prediction = {
       id: `pred_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       name: prediction.name || "Anonymous",
       gender: prediction.gender || "boy",
       dueDate: prediction.dueDate || new Date().toISOString().split("T")[0],
       nameSuggestion: prediction.nameSuggestion || "",
       timestamp: prediction.timestamp || new Date().toISOString(),
-    } as Prediction
+      guess: prediction.gender || "boy", // Add this to match the Prediction type
+    }
 
     // Check connection first
     const isConnected = await checkKVConnection()
@@ -67,23 +78,24 @@ export async function savePrediction(prediction: Partial<Prediction>): Promise<P
     await saveFileData(updatedPredictions)
 
     return newPrediction
-  } catch (error) {
-    console.error("Error saving prediction:", error)
+  } catch (error: any) {
+    console.error("Error saving prediction:", error?.message)
 
     // Try fallback to file storage
     try {
-      const newPrediction = {
+      const newPrediction: Prediction = {
         id: `pred_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
         name: prediction.name || "Anonymous",
         gender: prediction.gender || "boy",
         dueDate: prediction.dueDate || new Date().toISOString().split("T")[0],
         nameSuggestion: prediction.nameSuggestion || "",
         timestamp: prediction.timestamp || new Date().toISOString(),
-      } as Prediction
+        guess: prediction.gender || "boy", // Add this to match the Prediction type
+      }
 
       return addPredictionToFile(newPrediction)
-    } catch (fallbackError) {
-      console.error("Fallback storage also failed:", fallbackError)
+    } catch (fallbackError: any) {
+      console.error("Fallback storage also failed:", fallbackError?.message)
       throw error
     }
   }
@@ -106,8 +118,8 @@ export async function deletePrediction(id: string): Promise<void> {
     const updatedPredictions = predictions.filter((prediction) => prediction.id !== id)
     await kv.set("predictions", updatedPredictions)
     await saveFileData(updatedPredictions) // Keep file storage in sync
-  } catch (error) {
-    console.error("Error deleting prediction:", error)
+  } catch (error: any) {
+    console.error("Error deleting prediction:", error?.message)
     // Implement file-based deletion fallback here if needed
     throw error
   }
@@ -144,8 +156,8 @@ export async function updatePrediction(id: string, updateData: Partial<Predictio
     await saveFileData(predictions) // Keep file storage in sync
 
     return updatedPrediction
-  } catch (error) {
-    console.error("Error updating prediction:", error)
+  } catch (error: any) {
+    console.error("Error updating prediction:", error?.message)
     // Implement file-based update fallback here if needed
     throw error
   }
@@ -163,8 +175,8 @@ export async function getPredictionById(id: string): Promise<Prediction | null> 
 
     const predictions = await getAllPredictions()
     return predictions.find((prediction) => prediction.id === id) || null
-  } catch (error) {
-    console.error("Error getting prediction by id:", error)
+  } catch (error: any) {
+    console.error("Error getting prediction by id:", error?.message)
     return null
   }
 }

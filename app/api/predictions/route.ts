@@ -17,22 +17,29 @@ function checkEnvVariables() {
 }
 
 // GET - Fetch all predictions
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    console.log("GET /api/predictions - Starting")
+
     // Check environment variables
     if (!checkEnvVariables()) {
+      console.error("GET /api/predictions - Missing environment variables")
       return NextResponse.json({ error: "Missing required environment variables" }, { status: 500 })
     }
 
     // Check KV connection
     try {
+      console.log("GET /api/predictions - Checking KV connection")
       await kv.ping()
-    } catch (error) {
-      console.error("KV connection error:", error)
-      return NextResponse.json({ error: "Failed to connect to KV store" }, { status: 500 })
+      console.log("GET /api/predictions - KV connection successful")
+    } catch (error: any) {
+      console.error("GET /api/predictions - KV connection error:", error)
+      return NextResponse.json({ error: "Failed to connect to KV store", details: error?.message }, { status: 500 })
     }
 
+    console.log("GET /api/predictions - Fetching predictions")
     const predictions = await getAllPredictions()
+    console.log(`GET /api/predictions - Found ${predictions.length} predictions`)
 
     // Add cache control headers
     return NextResponse.json(predictions, {
@@ -42,44 +49,53 @@ export async function GET() {
         Expires: "0",
       },
     })
-  } catch (error) {
-    console.error("Error fetching predictions:", error)
-    return NextResponse.json({ error: "Failed to fetch predictions", details: error.message }, { status: 500 })
+  } catch (error: any) {
+    console.error("GET /api/predictions - Error:", error)
+    return NextResponse.json({ error: "Failed to fetch predictions", details: error?.message }, { status: 500 })
   }
 }
 
 // POST - Create a new prediction
 export async function POST(request: Request) {
   try {
+    console.log("POST /api/predictions - Starting")
+
     // Check environment variables
     if (!checkEnvVariables()) {
+      console.error("POST /api/predictions - Missing environment variables")
       return NextResponse.json({ error: "Missing required environment variables" }, { status: 500 })
     }
 
     // Check KV connection
     try {
+      console.log("POST /api/predictions - Checking KV connection")
       await kv.ping()
-    } catch (error) {
-      console.error("KV connection error:", error)
-      return NextResponse.json({ error: "Failed to connect to KV store" }, { status: 500 })
+      console.log("POST /api/predictions - KV connection successful")
+    } catch (error: any) {
+      console.error("POST /api/predictions - KV connection error:", error)
+      return NextResponse.json({ error: "Failed to connect to KV store", details: error?.message }, { status: 500 })
     }
 
     const data = await request.json()
-    console.log("Received prediction data:", data)
+    console.log("POST /api/predictions - Received data:", data)
 
-    const prediction = {
+    const prediction: Partial<Prediction> = {
       name: data.name,
       gender: data.gender,
       dueDate: data.dueDate,
       nameSuggestion: data.nameSuggestion,
       timestamp: data.timestamp || new Date().toISOString(),
+      guess: data.gender, // Add this to match the Prediction type
     }
 
+    console.log("POST /api/predictions - Saving prediction")
     const savedPrediction = await savePrediction(prediction)
+    console.log("POST /api/predictions - Prediction saved:", savedPrediction)
+
     return NextResponse.json({ success: true, prediction: savedPrediction })
-  } catch (error) {
-    console.error("Error saving prediction:", error)
-    return NextResponse.json({ error: "Failed to save prediction", details: error.message }, { status: 500 })
+  } catch (error: any) {
+    console.error("POST /api/predictions - Error:", error)
+    return NextResponse.json({ error: "Failed to save prediction", details: error?.message }, { status: 500 })
   }
 }
 
@@ -98,9 +114,9 @@ export async function DELETE(request: Request) {
 
     await deletePrediction(id)
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting prediction:", error)
-    return NextResponse.json({ error: "Failed to delete prediction", details: error.message }, { status: 500 })
+    return NextResponse.json({ error: "Failed to delete prediction", details: error?.message }, { status: 500 })
   }
 }
 
@@ -123,9 +139,9 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json({ success: true, prediction: updatedPrediction })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating prediction:", error)
-    return NextResponse.json({ error: "Failed to update prediction", details: error.message }, { status: 500 })
+    return NextResponse.json({ error: "Failed to update prediction", details: error?.message }, { status: 500 })
   }
 }
 

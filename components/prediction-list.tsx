@@ -13,10 +13,15 @@ interface Prediction {
 async function getPredictions(): Promise<Prediction[]> {
   // Use the utility function to get the base URL
   const baseUrl = getBaseUrl()
+  const url = `${baseUrl}/api/predictions`
+
+  console.log("Fetching predictions from:", url)
 
   try {
-    const res = await fetch(`${baseUrl}/api/predictions`, {
-      cache: "no-store", // Use only this option, not both
+    // Add a timestamp to bust cache
+    const timestamp = new Date().getTime()
+    const res = await fetch(`${url}?t=${timestamp}`, {
+      cache: "no-store",
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",
@@ -25,12 +30,14 @@ async function getPredictions(): Promise<Prediction[]> {
     })
 
     if (!res.ok) {
-      throw new Error("Failed to fetch predictions")
+      throw new Error(`Failed to fetch predictions: ${res.status} ${res.statusText}`)
     }
 
-    return res.json()
-  } catch (error) {
-    console.error("Error fetching predictions:", error)
+    const data = await res.json()
+    console.log("Fetched predictions:", data)
+    return data
+  } catch (error: any) {
+    console.error("Error fetching predictions:", error?.message)
     return [] // Return empty array on error
   }
 }
@@ -42,6 +49,11 @@ export default async function PredictionList() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">No predictions yet. Be the first to make one!</p>
+        <div className="mt-4">
+          <a href="/api/debug" target="_blank" className="text-blue-500 underline" rel="noreferrer">
+            Debug KV Store
+          </a>
+        </div>
       </div>
     )
   }

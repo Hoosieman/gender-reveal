@@ -9,6 +9,7 @@ import { getBaseUrl } from "@/lib/utils"
 export default function PredictionForm() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     gender: "boy",
@@ -24,10 +25,14 @@ export default function PredictionForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
     try {
       // Use the absolute URL with the base URL
       const baseUrl = getBaseUrl()
+      console.log("Submitting to:", `${baseUrl}/api/predictions`)
+      console.log("Form data:", formData)
+
       const response = await fetch(`${baseUrl}/api/predictions`, {
         method: "POST",
         headers: {
@@ -39,15 +44,17 @@ export default function PredictionForm() {
         }),
       })
 
-      if (response.ok) {
-        // Force a hard navigation to refresh the page completely
-        window.location.href = "/"
-      } else {
-        throw new Error("Failed to submit prediction")
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit prediction")
       }
-    } catch (error) {
+
+      // Force a hard navigation to refresh the page completely
+      window.location.href = "/"
+    } catch (error: any) {
       console.error("Error submitting prediction:", error)
-      alert("Failed to submit prediction. Please try again.")
+      setError(error?.message || "Failed to submit prediction. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -55,6 +62,8 @@ export default function PredictionForm() {
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+      {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">

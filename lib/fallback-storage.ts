@@ -26,8 +26,8 @@ export async function getFileData(): Promise<Prediction[]> {
       // If file doesn't exist or is invalid, return empty array
       return []
     }
-  } catch (error) {
-    console.error("Error reading file data:", error)
+  } catch (error: any) {
+    console.error("Error reading file data:", error?.message)
     return []
   }
 }
@@ -37,8 +37,8 @@ export async function saveFileData(predictions: Prediction[]): Promise<void> {
   try {
     await ensureDataDirectory()
     await fs.writeFile(DATA_FILE, JSON.stringify(predictions, null, 2), "utf8")
-  } catch (error) {
-    console.error("Error saving file data:", error)
+  } catch (error: any) {
+    console.error("Error saving file data:", error?.message)
   }
 }
 
@@ -49,8 +49,8 @@ export async function addPredictionToFile(prediction: Prediction): Promise<Predi
     predictions.push(prediction)
     await saveFileData(predictions)
     return prediction
-  } catch (error) {
-    console.error("Error adding prediction to file:", error)
+  } catch (error: any) {
+    console.error("Error adding prediction to file:", error?.message)
     throw error
   }
 }
