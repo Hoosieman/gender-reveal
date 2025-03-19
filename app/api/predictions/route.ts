@@ -3,8 +3,8 @@ import fs from "fs/promises"
 import path from "path"
 
 // Change the path to use /tmp in production
-const dataFilePath = process.env.VERCEL 
-  ? path.join('/tmp', "predictions.json")
+const dataFilePath = process.env.VERCEL
+  ? path.join("/tmp", "predictions.json")
   : path.join(process.cwd(), "data", "predictions.json")
 
 // Ensure the data directory exists (only needed for local development)
@@ -41,6 +41,9 @@ export async function POST(request: Request) {
   try {
     const prediction = await request.json()
 
+    // Add timestamp for sorting
+    prediction.timestamp = new Date().toISOString()
+
     await ensureDataDirectory()
 
     let predictions = []
@@ -62,3 +65,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to save prediction" }, { status: 500 })
   }
 }
+
