@@ -8,6 +8,8 @@ try {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Add this to disable static generation for pages that depend on dynamic data
+  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },

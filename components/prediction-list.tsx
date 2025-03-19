@@ -14,15 +14,23 @@ async function getPredictions(): Promise<Prediction[]> {
   const baseUrl = getBaseUrl()
 
   try {
+    // During build time, this might fail, so we need to handle it gracefully
     const res = await fetch(`${baseUrl}/api/predictions`, {
       cache: "no-store",
     })
 
     if (!res.ok) {
-      throw new Error("Failed to fetch predictions")
+      console.warn("Failed to fetch predictions, returning empty array")
+      return []
     }
 
-    return res.json()
+    const contentType = res.headers.get("content-type")
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn("Response is not JSON, returning empty array")
+      return []
+    }
+
+    return await res.json()
   } catch (error) {
     console.error("Error fetching predictions:", error)
     return [] // Return empty array on error

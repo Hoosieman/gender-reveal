@@ -1,5 +1,8 @@
+import Link from "next/link"
 import { Suspense } from "react"
 import PredictionList from "@/components/prediction-list"
+
+export const dynamic = "force-dynamic"
 
 export default function Home() {
   return (
@@ -9,12 +12,12 @@ export default function Home() {
         <p className="text-lg text-gray-600 mb-6">
           Join the fun and share your prediction for our upcoming bundle of joy!
         </p>
-        <a
+        <Link
           href="/predict"
           className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
         >
           Make Your Prediction
-        </a>
+        </Link>
       </div>
 
       <div className="mt-12">
