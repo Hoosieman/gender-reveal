@@ -16,8 +16,7 @@ async function getPredictions(): Promise<Prediction[]> {
 
   try {
     const res = await fetch(`${baseUrl}/api/predictions`, {
-      cache: "no-store",
-      next: { revalidate: 0 },
+      cache: "no-store", // Use only this option, not both
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",
