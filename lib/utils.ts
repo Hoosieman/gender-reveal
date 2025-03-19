@@ -1,29 +1,19 @@
-export function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(" ")
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-// Updated getBaseUrl function to handle build environment
+// Add this function if it doesn't exist
 export function getBaseUrl() {
-  // Check if we're running in the browser
+  // Check if we're running in a browser environment
   if (typeof window !== "undefined") {
-    // In the browser, we can use the window.location.origin
     return window.location.origin
   }
 
-  // On the server side
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-
-  // During build time, we might not have a valid URL
-  // Return a placeholder that will be replaced at runtime
-  if (process.env.NODE_ENV === "production") {
-    // For production builds, return an empty string to avoid build errors
-    // The actual URL will be determined at runtime
-    return ""
-  }
-
-  // Fallback for local development
-  return "http://localhost:3000"
+  // For server-side rendering
+  const url = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || "http://localhost:3000"
+  return url.startsWith("http") ? url : `https://${url}`
 }
 

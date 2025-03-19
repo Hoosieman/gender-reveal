@@ -40,8 +40,8 @@ export default function PredictionForm() {
       })
 
       if (response.ok) {
-        router.push("/")
-        router.refresh()
+        // Force a hard navigation to refresh the page completely
+        window.location.href = "/"
       } else {
         throw new Error("Failed to submit prediction")
       }

@@ -7,6 +7,7 @@ interface Prediction {
   dueDate: string
   nameSuggestion: string
   timestamp: string
+  id: string
 }
 
 async function getPredictions(): Promise<Prediction[]> {
@@ -14,23 +15,21 @@ async function getPredictions(): Promise<Prediction[]> {
   const baseUrl = getBaseUrl()
 
   try {
-    // During build time, this might fail, so we need to handle it gracefully
     const res = await fetch(`${baseUrl}/api/predictions`, {
       cache: "no-store",
+      next: { revalidate: 0 },
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
     })
 
     if (!res.ok) {
-      console.warn("Failed to fetch predictions, returning empty array")
-      return []
+      throw new Error("Failed to fetch predictions")
     }
 
-    const contentType = res.headers.get("content-type")
-    if (!contentType || !contentType.includes("application/json")) {
-      console.warn("Response is not JSON, returning empty array")
-      return []
-    }
-
-    return await res.json()
+    return res.json()
   } catch (error) {
     console.error("Error fetching predictions:", error)
     return [] // Return empty array on error
@@ -51,7 +50,10 @@ export default async function PredictionList() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {predictions.map((prediction, index) => (
-        <div key={index} className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+        <div
+          key={prediction.id || index}
+          className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200"
+        >
           <div className={`h-2 w-full ${prediction.gender === "boy" ? "bg-blue-500" : "bg-pink-500"}`} />
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">

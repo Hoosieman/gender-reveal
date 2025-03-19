@@ -6,7 +6,15 @@ import type { Prediction } from "@/lib/types"
 export async function GET() {
   try {
     const predictions = await getAllPredictions()
-    return NextResponse.json(predictions)
+
+    // Add cache control headers
+    return NextResponse.json(predictions, {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    })
   } catch (error) {
     console.error("Error fetching predictions:", error)
     return NextResponse.json({ error: "Failed to fetch predictions" }, { status: 500 })
