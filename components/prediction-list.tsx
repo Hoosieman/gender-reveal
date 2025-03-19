@@ -1,5 +1,5 @@
 import { format } from "date-fns"
-import { getBaseUrl } from "@/lib/utils"
+import { kv } from "@vercel/kv"
 
 interface Prediction {
   name: string
@@ -8,42 +8,52 @@ interface Prediction {
   nameSuggestion: string
   timestamp: string
   id: string
+  guess?: string
 }
 
+// Fetch directly from KV instead of using the API
 async function getPredictions(): Promise<Prediction[]> {
-  // Use the utility function to get the base URL
-  const baseUrl = getBaseUrl()
-  const url = `${baseUrl}/api/predictions`
-
-  console.log("Fetching predictions from:", url)
+  console.log("Fetching predictions directly from KV")
 
   try {
-    // Add a timestamp to bust cache
-    const timestamp = new Date().getTime()
-    const res = await fetch(`${url}?t=${timestamp}`, {
-      cache: "no-store",
-      headers: {
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
-      },
-    })
+    // Try to get predictions directly from KV
+    const predictions = (await kv.get<Prediction[]>("predictions")) || []
+    console.log(`Got ${predictions.length} predictions directly from KV:`, predictions)
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch predictions: ${res.status} ${res.statusText}`)
-    }
-
-    const data = await res.json()
-    console.log("Fetched predictions:", data)
-    return data
+    return Array.isArray(predictions) ? predictions : []
   } catch (error: any) {
-    console.error("Error fetching predictions:", error?.message)
-    return [] // Return empty array on error
+    console.error("Error fetching predictions from KV:", error?.message)
+
+    // If direct KV access fails, try the API as fallback
+    try {
+      console.log("Falling back to API fetch")
+      const res = await fetch(`/api/predictions?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      })
+
+      if (!res.ok) {
+        throw new Error(`API fetch failed: ${res.status} ${res.statusText}`)
+      }
+
+      const data = await res.json()
+      console.log("Fetched predictions from API:", data)
+      return data
+    } catch (apiFetchError: any) {
+      console.error("API fetch also failed:", apiFetchError?.message)
+      return []
+    }
   }
 }
 
 export default async function PredictionList() {
   const predictions = await getPredictions()
+
+  console.log(`PredictionList rendering with ${predictions.length} predictions`)
 
   if (!predictions || predictions.length === 0) {
     return (

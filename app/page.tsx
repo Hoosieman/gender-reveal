@@ -2,9 +2,14 @@ import Link from "next/link"
 import { Suspense } from "react"
 import PredictionList from "@/components/prediction-list"
 import RefreshButton from "@/components/refresh-button"
+import TimestampDisplay from "@/components/timestamp-display"
+import ServerTimestamp from "@/components/server-timestamp"
+import DirectKVDisplay from "@/components/direct-kv-display"
 
+// Force dynamic rendering and disable caching
 export const dynamic = "force-dynamic"
 export const revalidate = 0
+export const fetchCache = "force-no-store"
 
 export default function Home() {
   return (
@@ -31,6 +36,13 @@ export default function Home() {
           <PredictionList />
         </Suspense>
       </div>
+
+      <Suspense fallback={<div className="text-center">Loading direct KV access...</div>}>
+        <DirectKVDisplay />
+      </Suspense>
+
+      <TimestampDisplay />
+      <ServerTimestamp />
     </main>
   )
 }
