@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import PredictionList from "@/components/prediction-list"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default function Home() {
   return (
