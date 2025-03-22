@@ -7,6 +7,7 @@ import TimestampDisplay from "@/components/timestamp-display"
 import ServerTimestamp from "@/components/server-timestamp"
 import DirectKVDisplay from "@/components/direct-kv-display"
 import { Heart } from "lucide-react"
+import SecretTrigger from "@/components/secret-trigger"
 
 // Force dynamic rendering and disable caching
 export const dynamic = "force-dynamic"
@@ -32,7 +33,8 @@ export default function Home() {
           <h1 className="text-5xl font-bold mb-6 gender-reveal-heading">Baby Gender Reveal</h1>
 
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join the fun and share your prediction for our upcoming bundle of joy! Will it have Parker's big ears or Katie's beautiful eyes?
+            Join the fun and share your prediction for our upcoming bundle of joy! Will it have Parker's big{" "}
+            <SecretTrigger>ears</SecretTrigger> or Katie's beautiful eyes?
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
